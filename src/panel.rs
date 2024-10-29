@@ -48,27 +48,31 @@ fn setup(mut commands: Commands,image_assets:Res<MyAssets>) {
                 UiImage2dBundle::from(image_assets.bar.clone()),
                 Panel,
             ));
-            let h = 8.0;
-            let offset = 5.0;
+            let w = 10.0;
+            let offset = 15.0;
 
-            let button = button_box.add(format!("Button{:?}", 1));
-
-            ui.spawn((
-                button,
-                UiLayout::window()
-                    .x(Rl(  h + offset))
-                    .size(Rl((h,100.0 )))
-                    .pack::<Base>(),
-                UiColor::<Base>::new(Color::Srgba(Srgba::WHITE)),
-                UiColor::<Hover>::new(Color::Srgba(Srgba::RED)),
-                UiAnimator::<Hover>::new()
-                    .forward_speed(5.0)
-                    .backward_speed(1.0),
-                UiImage2dBundle::from(image_assets.sunflower_card.clone()),
-                Card::sunflower,
-                UiClickEmitter::SELF,
-               
-            ));
+            let cards=vec![(image_assets.sunflower_card.clone(),Card::sunflower),(image_assets.peashoote_card.clone(),Card::peashooter)];
+            for (i,(img,card)) in cards.iter().enumerate() {
+                let index=i;
+                let button = button_box.add(format!("Button{:?}", i));
+                ui.spawn((
+                    button,
+                    UiLayout::window()
+                        .x(Rl(  w*index as f32 + offset ))
+                        .size(Rl((w,100.0 )))
+                        .pack::<Base>(),
+                    UiColor::<Base>::new(Color::Srgba(Srgba::WHITE)),
+                    UiColor::<Hover>::new(Color::Srgba(Srgba::RED)),
+                    UiAnimator::<Hover>::new()
+                        .forward_speed(5.0)
+                        .backward_speed(1.0),
+                    UiImage2dBundle::from(img.clone()),
+                    card.clone(),
+                    UiClickEmitter::SELF,
+                   
+                ));
+            }
+            
 
         });
 
@@ -142,7 +146,7 @@ fn on_draw_plant(
         }
         return;
     };
-
+   
     if let Ok((_, mut transform)) = plant_shadow_query.get_single_mut() {
         transform.translation = hover_point.extend(1.5);
     } else {
@@ -152,11 +156,15 @@ fn on_draw_plant(
                     custom_size: Some(Vec2::new(64.0, 48.0)),
                     ..default()
                 },
-                texture: game_resources.type_of(select_card),
+                texture: game_resources.type_of(select_card).0,
                 transform: Transform::from_translation(hover_point.extend(1.5)),
                 ..default()
             },
-            
+            TextureAtlas {
+                layout: game_resources.type_of(select_card).1,
+                index: 0,
+            },
+    
             PanelPlantShadow,
         ));
     }

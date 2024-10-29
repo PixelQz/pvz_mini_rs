@@ -17,8 +17,10 @@ impl Plugin for MyAssetsPlugin{
 #[derive(AssetCollection, Resource)]
 pub struct MyAssets {
 // atlas
-    #[asset(texture_atlas_layout(tile_size_x =75 , tile_size_y = 75, columns = 1, rows = 13, padding_x = 0, padding_y = 0, offset_x = 0, offset_y = 0))]
+    #[asset(texture_atlas_layout(tile_size_x =77 , tile_size_y = 75, columns =8 , rows = 1, padding_x = 0, padding_y = 0, offset_x = 0, offset_y = 0))]
     pub peashoote_layout: Handle<TextureAtlasLayout>,
+    #[asset(texture_atlas_layout(tile_size_x =73, tile_size_y = 75, columns =8 , rows = 1, padding_x = 0, padding_y = 0, offset_x = 0, offset_y = 0))]
+    pub sunflower_layout: Handle<TextureAtlasLayout>,
 // background
     #[asset(path = "map0.jpg")]
     pub bg: Handle<Image>,
@@ -30,18 +32,18 @@ pub struct MyAssets {
     #[asset(path = "Cards/card_1.png")]
     pub peashoote_card: Handle<Image>,
 // plant
-    #[asset(path = "0/1.png")]
+    #[asset(path = "Plants/plant_9.png")]
     pub peashooter: Handle<Image>,
-    #[asset(path = "./1/1.png")]
+    #[asset(path = "Plants/plant_0.png")]
     pub sunflower: Handle<Image>,
     
 }
 
 impl MyAssets {
-    pub fn type_of(&self,card_type: Card) -> Handle<Image>{
+    pub fn type_of(&self,card_type: Card) -> (Handle<Image>,Handle<TextureAtlasLayout>){
         match card_type {
-            Card::peashooter=>self.peashooter.clone(),
-            Card::sunflower=>self.sunflower.clone(),
+            Card::peashooter=>(self.peashooter.clone(),self.peashoote_layout.clone()),
+            Card::sunflower=>(self.sunflower.clone(),self.sunflower_layout.clone()),
         }
     }
 }

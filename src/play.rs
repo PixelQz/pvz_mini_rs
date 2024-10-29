@@ -7,7 +7,7 @@ impl Plugin for PlayPlugin{
     fn build(&self, app: &mut App) {
         app
         .add_systems(OnEnter(GameState::Play), play_start)
-        .add_systems(Update, (draw_plant_shadow,grow_plant,on_grow_plant).run_if(in_state(GameState::Play)))
+        .add_systems(Update, (draw_plant_shadow,grow_plant,on_grow_plant,animate_sprite).run_if(in_state(GameState::Play)))
         ;
     
     }
@@ -114,9 +114,13 @@ fn draw_plant_shadow(
                             custom_size: Some(Vec2::new(64.0, 48.0)),
                             ..default()
                         },
-                        texture: game_resources.type_of(select_card),
+                        texture: game_resources.type_of(select_card).0,
                         transform: Transform::from_xyz(0.0, 0.0, 0.1),
                         ..default()
+                    },
+                    TextureAtlas {
+                        layout: game_resources.type_of(select_card).1,
+                        index: 0,
                     },
                     TilePlantShadow(select_card),
                 ));
@@ -165,7 +169,7 @@ fn on_grow_plant(
     
 ) {
   
-  
+    let animation_indices = AnimationIndices { first: 1, last: 7 };
     for (entity, want_grow_plant) in &grow_plant_query {
         commands
             .entity(entity)
@@ -177,16 +181,46 @@ fn on_grow_plant(
                             custom_size: Some(Vec2::new(75.0, 75.0)),
                             ..default()
                         },
-                        texture: game_resources.type_of(want_grow_plant.0),
+                        texture: game_resources.type_of(want_grow_plant.0).0,
                         transform: Transform::from_xyz(0.0, 0.0, 0.1),
                         ..default()
                     },
+                    TextureAtlas {
+                        layout: game_resources.type_of(want_grow_plant.0).1,
+                        index: 0,
+                    },
                     Plant,
-                   
+                    animation_indices,
+                    AnimationTimer(Timer::from_seconds(0.2, TimerMode::Repeating)),
                 ));
             });
     }
 }
+
+fn animate_sprite(
+    time: Res<Time>,
+    mut query: Query<(&AnimationIndices, &mut AnimationTimer, &mut TextureAtlas)>,
+) {
+    for (indices, mut timer, mut atlas) in &mut query {
+        timer.tick(time.delta());
+        if timer.just_finished() {
+            atlas.index = if atlas.index == indices.last {
+                indices.first
+            } else {
+                atlas.index + 1
+            };
+        }
+    }
+}
+
+
+#[derive(Component,Clone, Copy)]
+struct AnimationIndices {
+    first: usize,
+    last: usize,
+}
+#[derive(Component, Deref, DerefMut)]
+struct AnimationTimer(Timer);
 #[derive(Component)]
 struct Bar;
 #[derive(Component)]
